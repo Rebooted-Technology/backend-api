@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Role } from './role/role.enum';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -15,10 +17,19 @@ export class AuthService {
     }
 
     async login(user: any): Promise<{ access_token: string }> {
-        const payload = { username: user, sub: "123465-456789-789123" } 
+        const payload = { username: user, sub: "123465-456789-789123", role: [Role.ADMIN] }
         return {
             access_token: this.jwtService.sign(payload)
         }
+    }
+
+    extractTokenFromHeader(request: Request): string {
+        const [type, token] = request.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : '';
+    }
+
+    decodeToken(token: string) {
+        return this.jwtService.decode(token)
     }
 
 }
